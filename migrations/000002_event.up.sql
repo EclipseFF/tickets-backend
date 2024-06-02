@@ -10,7 +10,8 @@ CREATE TABLE events (
                         age_restriction INTEGER,
                         rating NUMERIC,
                         created_at TIMESTAMP,
-                        updated_at TIMESTAMP
+                        updated_at TIMESTAMP,
+                        duration text
 );
 
 create table event_types (

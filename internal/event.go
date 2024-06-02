@@ -32,6 +32,7 @@ type Event struct {
 	Rating         *float64     `json:"rating"`
 	CreatedAt      *time.Time   `json:"createdAt"`
 	UpdatedAt      *time.Time   `json:"updatedAt"`
+	Duration       *string      `json:"duration"`
 }
 
 type EventImages struct {
@@ -361,7 +362,7 @@ func (m *EventRepo) GetEventById(id *int) (*Event, error) {
 	}
 	defer tx.Rollback(context.Background())
 	var e Event
-	err = tx.QueryRow(context.Background(), `SELECT * FROM events where id = $1`, *id).Scan(&e.ID, &e.Title, &e.Description, &e.BriefDesc, &e.Genres, &e.StartTime, &e.EndTime, &e.Price, &e.AgeRestriction, &e.Rating, &e.CreatedAt, &e.UpdatedAt)
+	err = tx.QueryRow(context.Background(), `SELECT * FROM events where id = $1`, *id).Scan(&e.ID, &e.Title, &e.Description, &e.BriefDesc, &e.Genres, &e.StartTime, &e.EndTime, &e.Price, &e.AgeRestriction, &e.Rating, &e.CreatedAt, &e.UpdatedAt, &e.Duration)
 	if err != nil {
 		return nil, err
 	}
@@ -369,5 +370,11 @@ func (m *EventRepo) GetEventById(id *int) (*Event, error) {
 	if err != nil {
 		return nil, err
 	}
+	venueRepo := VenueRepo{DB: m.DB}
+	venues, err := venueRepo.GetVenuesByEvent(e.ID)
+	if err != nil {
+		return nil, err
+	}
+	e.Venues = venues
 	return &e, nil
 }
