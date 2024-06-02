@@ -6,7 +6,13 @@ import (
 )
 
 type Models struct {
-	user internal.UserModel
+	user    internal.UserRepo
+	sector  internal.SectorRepo
+	seat    internal.SeatRepo
+	venue   internal.VenueRepo
+	event   internal.EventRepo
+	tickets internal.TicketRepo
+	admin   internal.AdminRepo
 }
 
 type Config struct {
@@ -20,9 +26,10 @@ type Application struct {
 	config Config
 }
 
-func NewApplication(dsn, port *string) (*Application, error) {
+func NewApp(dsn, port *string) (*Application, error) {
 	app := Application{}
 	app.server = echo.New()
+	app.server.HideBanner = true
 	app.AddMiddleware()
 	app.AddRoutes()
 	app.config.port = port
@@ -31,6 +38,12 @@ func NewApplication(dsn, port *string) (*Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	app.models.user = internal.UserModel{DB: pool}
+	app.models.user = internal.UserRepo{DB: pool}
+	app.models.sector = internal.SectorRepo{DB: pool}
+	app.models.seat = internal.SeatRepo{DB: pool}
+	app.models.venue = internal.VenueRepo{DB: pool}
+	app.models.event = internal.EventRepo{DB: pool}
+	app.models.tickets = internal.TicketRepo{DB: pool}
+	app.models.admin = internal.AdminRepo{DB: pool}
 	return &app, nil
 }
