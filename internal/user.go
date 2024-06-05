@@ -68,7 +68,7 @@ func (m *UserRepo) GetUserById(id int) (*User, error) {
 	defer tx.Rollback(context.Background())
 	row := tx.QueryRow(context.Background(), `SELECT * FROM users WHERE id = $1`, id)
 	var u User
-	err = row.Scan(&u.Id, &u.Phone, &u.Email)
+	err = row.Scan(&u.Id, &u.Email, &u.Password.Hash, &u.Phone)
 	tx.Commit(context.Background())
 	if err != nil {
 		return nil, err
@@ -199,4 +199,33 @@ func (m *UserRepo) GetUserAdditional(id int) (*AdditionalUserData, error) {
 		return nil, err
 	}
 	return &data, nil
+}
+
+func (m *UserRepo) UpdateUser(user *User, data *AdditionalUserData, createNew bool) error {
+
+	tx, err := m.DB.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	_, err = tx.Exec(context.Background(), `UPDATE users SET email = $1, password = $2, phone = $3 where id = $4`, user.Email, user.Password.Hash, user.Phone, user.Id)
+	if err != nil {
+		return err
+	}
+	if createNew {
+		_, err = tx.Exec(context.Background(), `insert into additional_user_data(user_id, surname, name, patronymic, date_of_birth) VALUES ($1, $2, $3, $4, $5)`, user.Id, data.Surname, data.Name, data.Patronymic, data.DateOfBirth)
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err = tx.Exec(context.Background(), `UPDATE additional_user_data SET surname = $1, name = $2, patronymic = $3, date_of_birth =$4 where user_id = $5`, data.Surname, data.Name, data.Patronymic, data.DateOfBirth, user.Id)
+		if err != nil {
+			return err
+		}
+	}
+	err = tx.Commit(context.Background())
+	if err != nil {
+		return err
+	}
+	return nil
 }

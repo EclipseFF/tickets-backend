@@ -28,9 +28,10 @@ func (app *Application) AddRoutes() {
 	usersRoutes.GET("/:id", app.GetAdditionalUserData)
 	usersRoutes.POST("", app.GetUserBySession)
 	usersRoutes.GET("/additional/:id", app.GetAdditionalUserData)
+	usersRoutes.PATCH("/additional", app.UpdateAdditionalUserData)
 
 	eventRoutes := version.Group("/event")
-	eventRoutes.GET("/page/:page", app.GetEventPagination)
+	eventRoutes.GET("/page", app.GetEventPagination)
 	eventRoutes.POST("/create", app.CreateEvent)
 	eventRoutes.GET("/:id", app.GetEventById)
 	eventRoutes.GET("/images/:id", app.GetEventImages)
