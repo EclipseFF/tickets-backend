@@ -378,3 +378,16 @@ func (m *EventRepo) GetEventById(id *int) (*Event, error) {
 	e.Venues = venues
 	return &e, nil
 }
+
+func (m *EventRepo) CreateEventImage(eventId int, mainImages []*string, posters []*string) error {
+	tx, err := m.DB.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	_, err = tx.Exec(context.Background(), `INSERT INTO event_images(event_id, posters, main_images) VALUES ($1, $2, $3)`, eventId, posters, mainImages)
+	if err != nil {
+		return err
+	}
+	return tx.Commit(context.Background())
+}

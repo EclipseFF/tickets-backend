@@ -33,6 +33,7 @@ func (app *Application) AddRoutes() {
 	eventRoutes := version.Group("/event")
 	eventRoutes.GET("/page", app.GetEventPagination)
 	eventRoutes.POST("/create", app.CreateEvent)
+	eventRoutes.POST("/images/upload", app.UploadImages)
 	eventRoutes.GET("/:id", app.GetEventById)
 	eventRoutes.GET("/images/:id", app.GetEventImages)
 	eventRoutes.GET("/genres", app.GetGenres)
@@ -45,6 +46,8 @@ func (app *Application) AddRoutes() {
 
 	venueRoutes := version.Group("/venue")
 	venueRoutes.GET("/all", app.GetAllVenues)
+	venueRoutes.GET("/event/:id", app.GetVenuesByEvent)
+	venueRoutes.GET("/:id", app.GetVenueById)
 
 	sectorRoutes := version.Group("/sector")
 	sectorRoutes.GET("/:id", app.GetSectorsByVenueId)

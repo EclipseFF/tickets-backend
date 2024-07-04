@@ -3,8 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"tap2go/internal"
 	"time"
@@ -169,4 +173,95 @@ func (app *Application) GetEventById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, "internal server error")
 	}
 	return c.JSON(http.StatusOK, event)
+}
+
+func (app *Application) UploadImages(c echo.Context) error {
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "internal server error")
+	}
+	param := form.Value["eventId"]
+	eventId, err := strconv.Atoi(param[0])
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "invalid id")
+	}
+	mainImagesNames := make([]*string, 0)
+	postersNames := make([]*string, 0)
+
+	mainImages := form.File["main_images"]
+	for _, file := range mainImages {
+		temp, err := uuid.NewV7()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, "internal server error")
+		}
+		file.Filename = temp.String() + filepath.Ext(file.Filename)
+		mainImagesNames = append(mainImagesNames, &file.Filename)
+	}
+
+	posters := form.File["posters"]
+	for _, file := range posters {
+		temp, err := uuid.NewV7()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, "internal server error")
+		}
+		file.Filename = temp.String() + filepath.Ext(file.Filename)
+		postersNames = append(postersNames, &file.Filename)
+	}
+	if len(mainImagesNames) == 0 && len(postersNames) == 0 {
+		return c.JSON(http.StatusBadRequest, "invalid upload images")
+	}
+	err = app.models.event.CreateEventImage(eventId, mainImagesNames, postersNames)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "internal server error")
+	}
+	folder := "./static/" + strconv.Itoa(eventId)
+	err = os.Mkdir(folder, 0705)
+	if err != nil && !os.IsExist(err) {
+		return c.JSON(http.StatusInternalServerError, "internal server error")
+	}
+
+	for _, file := range mainImages {
+		// Source
+		src, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer src.Close()
+
+		// Destination
+		dst, err := os.Create(folder + "/" + file.Filename)
+		if err != nil {
+			return err
+		}
+		defer dst.Close()
+
+		// Copy
+		if _, err = io.Copy(dst, src); err != nil {
+			return err
+		}
+
+	}
+
+	for _, file := range posters {
+		// Source
+		src, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer src.Close()
+
+		// Destination
+		dst, err := os.Create(folder + "/" + file.Filename)
+		if err != nil {
+			return err
+		}
+		defer dst.Close()
+
+		// Copy
+		if _, err = io.Copy(dst, src); err != nil {
+			return err
+		}
+
+	}
+	return c.JSON(http.StatusOK, "success")
 }
