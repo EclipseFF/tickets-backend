@@ -51,4 +51,10 @@ func (app *Application) AddRoutes() {
 
 	sectorRoutes := version.Group("/sector")
 	sectorRoutes.GET("/:id", app.GetSectorsByVenueId)
+
+	newsRoutes := version.Group("/news")
+	newsRoutes.GET("/all", app.GetAllNews)
+	newsRoutes.GET("/page", app.GetNewsPagination)
+	newsRoutes.GET("/:id", app.GetNewsById)
+	newsRoutes.POST("", app.CreateNews)
 }
