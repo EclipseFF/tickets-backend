@@ -21,9 +21,9 @@ create table event_types (
 );
 
 CREATE TABLE event_venues (
-                              event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-                              venue_id INTEGER REFERENCES venues(id) ON DELETE CASCADE,
-                              PRIMARY KEY (event_id, venue_id)
+                              id SERIAL PRIMARY KEY,
+                              event_id INT REFERENCES events(id),
+                              venue_id INT REFERENCES venues(id)
 );
 
 create TABLE additional_user_data (

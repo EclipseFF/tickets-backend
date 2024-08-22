@@ -12,9 +12,14 @@ CREATE TABLE venues (
 
 CREATE TABLE sectors (
                          id SERIAL PRIMARY KEY,
-                         venue_id INT NOT NULL,
-                         name VARCHAR(255) NOT NULL,
-                         layout JSONB NOT NULL,
+                         venue_id INT ,
+                         name VARCHAR(255),
+                         height INT,
+                         width INT,
+                         is_link BOOLEAN,
+                         "left" INT,
+                         top INT,
+                         image TEXT,
                          FOREIGN KEY (venue_id) REFERENCES venues (id) ON DELETE CASCADE
 );
 

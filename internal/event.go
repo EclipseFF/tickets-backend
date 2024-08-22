@@ -9,6 +9,16 @@ import (
 	"time"
 )
 
+type Decor struct {
+	Id       *int    `json:"id"`
+	Name     *string `form:"name" json:"name"`
+	Image    *string `form:"image" json:"image"`
+	Uuid     *string `form:"uuid" json:"uuid"`
+	Left     *int    `form:"left" json:"left"`
+	Top      *int    `form:"top" json:"top"`
+	Filename *string `form:"filename" json:"filename"`
+}
+
 type EventRepo struct {
 	DB *pgxpool.Pool
 }
@@ -47,6 +57,12 @@ type EventType struct {
 	TranslatedName *string `json:"translatedName"`
 }
 
+type SeatType struct {
+	ID    *int    `json:"id"`
+	Name  *string `json:"name"`
+	Price *int    `json:"price"`
+}
+
 func (m *EventRepo) CreateEvent(event *Event) (*int, error) {
 	tx, err := m.DB.Begin(context.Background())
 	if err != nil {
@@ -63,7 +79,7 @@ func (m *EventRepo) CreateEvent(event *Event) (*int, error) {
 	}
 
 	for _, venue := range event.Venues {
-		_, err := tx.Exec(context.Background(), `INSERT INTO event_venues VALUES($1, $2)`, id, venue.ID)
+		_, err := tx.Exec(context.Background(), `INSERT INTO event_venues(id, event_id, venue_id) VALUES(default, $1, $2)`, id, venue.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -390,4 +406,47 @@ func (m *EventRepo) CreateEventImage(eventId int, mainImages []*string, posters 
 		return err
 	}
 	return tx.Commit(context.Background())
+}
+
+func (m *EventRepo) CreateDecors(venueId *int, items []*Decor) ([]*Decor, error) {
+	tx, err := m.DB.Begin(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(context.Background())
+	_, err = tx.Exec(context.Background(), `DELETE FROM decors WHERE venue_id  = $1`, venueId)
+	if err != nil {
+		return nil, err
+	}
+	for i, decor := range items {
+		err := tx.QueryRow(context.Background(), `INSERT INTO decors
+		(id, name, created_at, venue_id)
+		VALUES
+		(default, $1, now(), $2) returning id`, decor.Name, venueId).Scan(&items[i].Id)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err = tx.Commit(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func (m *EventRepo) UpdateImageDecor(filename *string, id *int) error {
+	tx, err := m.DB.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	_, err = tx.Exec(context.Background(), `UPDATE decors SET images = $1 WHERE id = $2`, filename, id)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit(context.Background())
+	if err != nil {
+		return err
+	}
+	return nil
 }

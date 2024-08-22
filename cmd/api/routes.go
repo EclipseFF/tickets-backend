@@ -34,6 +34,7 @@ func (app *Application) AddRoutes() {
 	eventRoutes.GET("/page", app.GetEventPagination)
 	eventRoutes.POST("/create", app.CreateEvent)
 	eventRoutes.POST("/images/upload", app.UploadImages)
+
 	eventRoutes.GET("/:id", app.GetEventById)
 	eventRoutes.GET("/images/:id", app.GetEventImages)
 	eventRoutes.GET("/genres", app.GetGenres)
@@ -51,10 +52,20 @@ func (app *Application) AddRoutes() {
 
 	sectorRoutes := version.Group("/sector")
 	sectorRoutes.GET("/:id", app.GetSectorsByVenueId)
+	sectorRoutes.POST("", app.CreateSector)
 
 	newsRoutes := version.Group("/news")
 	newsRoutes.GET("/all", app.GetAllNews)
 	newsRoutes.GET("/page", app.GetNewsPagination)
 	newsRoutes.GET("/:id", app.GetNewsById)
 	newsRoutes.POST("", app.CreateNews)
+
+	eventRoutes.POST("/tickets/upload", app.UploadTicketsNoShah)
+	eventRoutes.POST("/tickets-shah/upload", app.UploadTicketsWithShah)
+	eventRoutes.POST("/tickets-shah/decor", app.UploadDecorWithShah)
+
+	ticketRoutes := version.Group("/ticket")
+	ticketRoutes.POST("/buy", app.BuyTicketNoShah)
+	ticketRoutes.POST("/venue/dates", app.ReadDatesForEventVenue)
+	ticketRoutes.POST("/venue/dates-shah", app.ReadDatesForEventVenueShah)
 }

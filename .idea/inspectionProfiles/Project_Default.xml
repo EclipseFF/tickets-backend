@@ -4,6 +4,7 @@
     <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
       <methods>
         <method importPath="tap2go/internal" receiver="*UserRepo" name="GetUserAdditional" />
+        <method importPath="github.com/labstack/echo/v4" receiver="Context" name="MultipartForm" />
       </methods>
     </inspection_tool>
   </profile>

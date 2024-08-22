@@ -10,8 +10,7 @@ import (
 )
 
 func main() {
-	//dsn := "postgres://postgres:asd123@localhost:5432/tap2go?sslmode=disable"
-	dsn := "postgres://postgres:asd123@host.docker.internal:5432/tap2go?sslmode=disable"
+	dsn := "postgres://postgres:asd123@localhost:5432/tap2go?sslmode=disable"
 	port := ":4000"
 	app, err := NewApp(&dsn, &port)
 	if err != nil {
